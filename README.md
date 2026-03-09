@@ -1,36 +1,100 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+Virtual Queue Management System (VQueue)
 
-## Getting Started
+VQueue is a web-based virtual queue management system that allows users to join service queues remotely and track their position in real time. It helps reduce physical waiting lines in places like government offices, hospitals, banks, and service centers.
 
-First, run the development server:
+The system provides an admin dashboard, user queue tracking, and a public display board similar to those used in real service counters.
 
-```bash
+Live Demo
+https://virtual-queue-zqfr.onrender.com
+Features
+
+Join queues remotely without waiting physically
+
+Real-time token status tracking
+
+Admin dashboard to manage queues
+
+Appointment scheduling system
+
+Emergency priority queue (₹30 payment via QR)
+
+Public display screen showing current and upcoming tokens
+
+Google OAuth login support
+
+Automatic service availability calculation
+
+Tech Stack
+
+Frontend & Backend
+
+Next.js
+
+Database
+
+SQLite using better-sqlite3
+
+Deployment
+
+Render
+
+Version Control
+
+GitHub
+
+Project Structure
+src/
+ ├── app/
+ │   ├── admin/
+ │   ├── dashboard/
+ │   ├── display/
+ │   ├── api/
+ │   └── login/register
+ ├── lib/
+ │   ├── db.ts
+ │   ├── auth.ts
+ │   └── availability.ts
+public/
+data/
+ └── vqueue.db
+Installation (Local Setup)
+
+Clone the repository:
+
+git clone https://github.com/narriakhil-oss/Virtual-queue.git
+
+Install dependencies:
+
+npm install
+
+Run development server:
+
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open in browser:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+http://localhost:3000
+Use Case
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+VQueue can be used in:
 
-## Learn More
+Government service centers
 
-To learn more about Next.js, take a look at the following resources:
+Hospitals and clinics
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Banks
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+RTO offices
 
-## Deploy on Vercel
+Customer service counters
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+It improves service efficiency, reduces crowding, and optimizes waiting time.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Author
+
+Akhil
+Computer Science Student
+
+License
+
+This project is for educational and demonstration purposes.
