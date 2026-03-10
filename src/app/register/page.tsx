@@ -8,9 +8,6 @@ export default function RegisterPage() {
   const [formData, setFormData] = useState({ name: '', email: '', password: '', phone: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [requiresOtp, setRequiresOtp] = useState(false);
-  const [otp, setOtp] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
   const router = useRouter();
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -38,33 +35,6 @@ export default function RegisterPage() {
         throw new Error(data.error || 'Registration failed');
       }
 
-      setSuccessMessage('Registration successful! Please check your email for the verification code.');
-      setRequiresOtp(true);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerify = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-    setSuccessMessage('');
-
-    try {
-      const res = await fetch('/api/auth/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: formData.email, otp }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || 'Verification failed');
-      }
-
       router.push('/dashboard');
     } catch (err: any) {
       setError(err.message);
@@ -82,9 +52,7 @@ export default function RegisterPage() {
       <div className="glass-panel animate-slide-up" style={{ padding: '48px', width: '100%', maxWidth: '480px' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <h1 style={{ marginBottom: '8px' }}>Create an Account</h1>
-          <p style={{ color: 'var(--text-muted)' }}>
-            {requiresOtp ? 'Enter the 6-digit code sent to your email' : 'Join VQueue and save time'}
-          </p>
+          <p style={{ color: 'var(--text-muted)' }}>Join VQueue and save time</p>
         </div>
 
         {error && (
@@ -93,81 +61,47 @@ export default function RegisterPage() {
           </div>
         )}
 
-        {successMessage && (
-          <div style={{ padding: '12px', marginBottom: '24px', backgroundColor: 'rgba(34, 197, 94, 0.1)', color: 'var(--success)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--success)' }}>
-            {successMessage}
-          </div>
-        )}
-
-        {!requiresOtp ? (
-          <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-muted)' }}>Full Name</label>
-              <input 
-                type="text" name="name" className="input" placeholder="John Doe" 
-                value={formData.name} onChange={handleChange} required 
-                disabled={loading}
-              />
-            </div>
-
-            <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-muted)' }}>Email Address</label>
-              <input 
-                type="email" name="email" className="input" placeholder="john@example.com" 
-                value={formData.email} onChange={handleChange} required 
-                disabled={loading}
-              />
-            </div>
-
-            <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-muted)' }}>Password</label>
-              <input 
-                type="password" name="password" className="input" placeholder="Create a strong password" 
-                value={formData.password} onChange={handleChange} required minLength={6}
-                disabled={loading}
-              />
-            </div>
-
-            <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-muted)' }}>Phone Number (Optional)</label>
-              <input 
-                type="tel" name="phone" className="input" placeholder="+1 (555) 000-0000" 
-                value={formData.phone} onChange={handleChange}
-                disabled={loading}
-              />
-            </div>
-
-            <button type="submit" className="btn btn-primary" style={{ marginTop: '12px' }} disabled={loading}>
-              {loading ? 'Sending OTP...' : 'Create Account'}
-            </button>
-          </form>
-        ) : (
-          <form onSubmit={handleVerify} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-muted)' }}>Verification Code</label>
-              <input 
-                type="text" className="input" placeholder="123456" 
-                value={otp} onChange={(e) => setOtp(e.target.value)} required 
-                maxLength={6} pattern="\d{6}" title="Please enter a 6-digit code"
-                disabled={loading}
-              />
-            </div>
-
-            <button type="submit" className="btn btn-primary" style={{ marginTop: '12px' }} disabled={loading}>
-              {loading ? 'Verifying...' : 'Verify & Login'}
-            </button>
-            
-            <button 
-              type="button" 
-              className="btn btn-outline" 
-              onClick={() => setRequiresOtp(false)} 
+        <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-muted)' }}>Full Name</label>
+            <input 
+              type="text" name="name" className="input" placeholder="John Doe" 
+              value={formData.name} onChange={handleChange} required 
               disabled={loading}
-            >
-              Back to Registration
-            </button>
-          </form>
-        )}
+            />
+          </div>
 
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-muted)' }}>Email Address</label>
+            <input 
+              type="email" name="email" className="input" placeholder="john@example.com" 
+              value={formData.email} onChange={handleChange} required 
+              disabled={loading}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-muted)' }}>Password</label>
+            <input 
+              type="password" name="password" className="input" placeholder="Create a strong password" 
+              value={formData.password} onChange={handleChange} required minLength={6}
+              disabled={loading}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-muted)' }}>Phone Number (Optional)</label>
+            <input 
+              type="tel" name="phone" className="input" placeholder="+1 (555) 000-0000" 
+              value={formData.phone} onChange={handleChange}
+              disabled={loading}
+            />
+          </div>
+
+          <button type="submit" className="btn btn-primary" style={{ marginTop: '12px' }} disabled={loading}>
+            {loading ? 'Creating account...' : 'Create Account'}
+          </button>
+        </form>
 
         <div style={{ marginTop: '32px', textAlign: 'center', fontSize: '0.875rem', color: 'var(--text-muted)' }}>
           Already have an account? <Link href="/login" style={{ fontWeight: 600 }}>Sign in</Link>
