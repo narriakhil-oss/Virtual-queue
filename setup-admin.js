@@ -11,13 +11,13 @@ try {
 
   if (exists) {
     // If exists but isn't admin (unlikely but possible), upgrade them
-    const updateStmt = db.prepare("UPDATE users SET role = 'admin' WHERE email = 'admin@vqueue.com'");
+    const updateStmt = db.prepare("UPDATE users SET role = 'admin', password = 'akhil@123' WHERE email = 'admin@vqueue.com'");
     updateStmt.run();
-    console.log('Admin user updated successfully.');
+    console.log('Admin user and password updated successfully.');
   } else {
     // Insert new admin user
     const insertStmt = db.prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)");
-    insertStmt.run('System Admin', 'admin@vqueue.com', 'admin123', 'admin');
+    insertStmt.run('System Admin', 'admin@vqueue.com', 'akhil@123', 'admin');
     console.log('Admin user created successfully.');
   }
 } catch (error) {
