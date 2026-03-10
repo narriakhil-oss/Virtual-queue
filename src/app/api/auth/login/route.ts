@@ -12,17 +12,21 @@ export async function POST(req: Request) {
 
     // Check user credentials
     // Note: In a production app, you should compare the hashed password
-    const stmt = db.prepare('SELECT id, name, email, role FROM users WHERE email = ? AND password = ?');
+    const stmt = db.prepare('SELECT id, name, email, role, is_verified FROM users WHERE email = ? AND password = ?');
     const user = stmt.get(email, password) as any;
 
     if (!user) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
+    if (user.is_verified !== 1) {
+      return NextResponse.json({ error: 'Please verify your email address first.' }, { status: 403 });
+    }
+
     // Generate JWT token
     const token = signToken({ id: user.id, email: user.email, role: user.role });
 
-    const response = NextResponse.json({ message: 'Login successful', user });
+    const response = NextResponse.json({ message: 'Login successful', user: { id: user.id, name: user.name, email: user.email, role: user.role } });
     
     // Set HTTP-only cookie
     response.cookies.set('vqueue_auth', token, {

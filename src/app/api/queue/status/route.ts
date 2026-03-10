@@ -35,11 +35,18 @@ export async function GET() {
       }
 
       // Get count of people waiting ahead of this user for this service
+      // A person is ahead if:
+      // 1. They are an emergency and we are not
+      // 2. We are both the same emergency status, but they were in line first (lower queue_position)
       const aheadStmt = db.prepare(`
         SELECT COUNT(*) as count FROM tokens 
-        WHERE service_id = ? AND status = 'waiting' AND queue_position < ?
+        WHERE service_id = ? AND status IN ('pending', 'scheduled', 'waiting')
+        AND (
+          (is_emergency > ?) OR 
+          (is_emergency = ? AND queue_position < ?)
+        )
       `);
-      const peopleAhead = (aheadStmt.get(token.service_id, token.queue_position) as any).count;
+      const peopleAhead = (aheadStmt.get(token.service_id, token.is_emergency, token.is_emergency, token.queue_position) as any).count;
 
       // Estimate wait time: say, 5 mins per person
       const waitTime = peopleAhead * 5;

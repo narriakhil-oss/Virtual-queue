@@ -21,7 +21,9 @@ const initDB = () => {
       email TEXT UNIQUE NOT NULL,
       password TEXT NOT NULL,
       phone TEXT,
-      role TEXT DEFAULT 'user'
+      role TEXT DEFAULT 'user',
+      is_verified BOOLEAN DEFAULT 0,
+      verification_token TEXT
     );
 
     CREATE TABLE IF NOT EXISTS services (
@@ -55,6 +57,15 @@ const initDB = () => {
     db.prepare('SELECT is_emergency FROM tokens LIMIT 1').get();
   } catch (err) {
     db.exec('ALTER TABLE tokens ADD COLUMN is_emergency BOOLEAN DEFAULT 0');
+  }
+
+  // Migration for email verification fields
+  try {
+    db.prepare('SELECT is_verified FROM users LIMIT 1').get();
+  } catch (err) {
+    db.exec('ALTER TABLE users ADD COLUMN is_verified BOOLEAN DEFAULT 0;');
+    db.exec('ALTER TABLE users ADD COLUMN verification_token TEXT;');
+    db.exec("UPDATE users SET is_verified = 1 WHERE email = 'narriakhil@gmail.com';");
   }
 
   // Migration for emergency_utr

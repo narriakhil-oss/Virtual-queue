@@ -10,38 +10,57 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
+    }
+
     // Check if user already exists
     const checkStmt = db.prepare('SELECT id FROM users WHERE email = ?');
     const existingUser = checkStmt.get(email);
     
     if (existingUser) {
-      return NextResponse.json({ error: 'User already exists' }, { status: 400 });
+      return NextResponse.json({ error: 'Email already registered' }, { status: 400 });
     }
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
     // Insert new user
     // Note: In a production app, password should be hashed (e.g., using bcrypt)
-    const insertStmt = db.prepare('INSERT INTO users (name, email, password, phone) VALUES (?, ?, ?, ?)');
-    const result = insertStmt.run(name, email, password, phone || null);
+    const insertStmt = db.prepare('INSERT INTO users (name, email, password, phone, is_verified, verification_token) VALUES (?, ?, ?, ?, ?, ?)');
+    insertStmt.run(name, email, password, phone || null, 0, otp);
 
-    const userId = result.lastInsertRowid;
-    
-    // Generate JWT token
-    const token = signToken({ id: userId, email, role: 'user' });
+    // Send email using Nodemailer and Ethereal
+    const nodemailer = require('nodemailer');
+    const testAccount = await nodemailer.createTestAccount();
 
-    const response = NextResponse.json({ message: 'User registered successfully', user: { id: userId, name, email, role: 'user' } });
-    
-    // Set HTTP-only cookie
-    response.cookies.set('vqueue_auth', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60, // 7 days
-      path: '/',
+    const transporter = nodemailer.createTransport({
+      host: "smtp.ethereal.email",
+      port: 587,
+      secure: false, // true for 465, false for other ports
+      auth: {
+        user: testAccount.user, // generated ethereal user
+        pass: testAccount.pass, // generated ethereal password
+      },
     });
 
-    return response;
+    const info = await transporter.sendMail({
+      from: '"VQueue System" <no-reply@vqueue.com>',
+      to: email,
+      subject: "Verify your email address",
+      text: `Your VQueue email verification code is: ${otp}`,
+      html: `<p>Your VQueue email verification code is: <strong>${otp}</strong></p>`,
+    });
+
+    console.log("OTP Email sent: %s", info.messageId);
+    console.log("Preview OTP Email URL: %s", nodemailer.getTestMessageUrl(info));
+
+    return NextResponse.json({ message: 'OTP sent successfully', email }, { status: 201 });
   } catch (error) {
     console.error('Registration error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+
