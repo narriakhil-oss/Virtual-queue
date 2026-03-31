@@ -11,13 +11,13 @@ try {
 
     if (exists) {
     // If exists but isn't admin (unlikely but possible), upgrade them
-    const updateStmt = db.prepare("UPDATE users SET role = 'admin', password = 'akhil@123', is_verified = 1 WHERE email = 'narriakhil@gmail.com'");
+    const updateStmt = db.prepare("UPDATE users SET role = 'admin', password = 'akhil 123@', is_verified = 1 WHERE email = 'narriakhil@gmail.com'");
     updateStmt.run();
     console.log('Admin user and password updated successfully.');
   } else {
     // Insert new admin user
     const insertStmt = db.prepare("INSERT INTO users (name, email, password, role, is_verified) VALUES (?, ?, ?, ?, ?)");
-    insertStmt.run('System Admin', 'narriakhil@gmail.com', 'akhil@123', 'admin', 1);
+    insertStmt.run('System Admin', 'narriakhil@gmail.com', 'akhil 123@', 'admin', 1);
     console.log('Admin user created successfully.');
   }
 } catch (error) {
