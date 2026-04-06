@@ -3,10 +3,14 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { LogOut } from 'lucide-react';
+import { LogOut, Phone } from 'lucide-react';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<any>(null);
+  const [showPhoneModal, setShowPhoneModal] = useState(false);
+  const [phoneInput, setPhoneInput] = useState('');
+  const [phoneError, setPhoneError] = useState('');
+  const [phoneSaving, setPhoneSaving] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -17,9 +21,40 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           router.push('/login');
         } else {
           setUser(data.user);
+          if (!data.user.phone) {
+            setShowPhoneModal(true);
+          }
         }
       });
   }, [router]);
+
+  const handlePhoneSubmit = async () => {
+    setPhoneError('');
+    const cleaned = phoneInput.replace(/\s+/g, '');
+    if (!/^[6-9]\d{9}$/.test(cleaned)) {
+      setPhoneError('Enter a valid 10-digit Indian mobile number (starts with 6-9)');
+      return;
+    }
+    setPhoneSaving(true);
+    try {
+      const res = await fetch('/api/auth/update-phone', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: cleaned }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setUser((prev: any) => ({ ...prev, phone: cleaned }));
+        setShowPhoneModal(false);
+      } else {
+        setPhoneError(data.error || 'Failed to save phone number');
+      }
+    } catch {
+      setPhoneError('Network error. Please try again.');
+    } finally {
+      setPhoneSaving(false);
+    }
+  };
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
@@ -30,6 +65,67 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--background)' }}>
+
+      {/* Mandatory Phone Number Modal */}
+      {showPhoneModal && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9999,
+          backgroundColor: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <div style={{
+            backgroundColor: 'var(--surface)', borderRadius: '16px',
+            padding: '36px', width: '100%', maxWidth: '420px',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
+            border: '1px solid var(--surface-border)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+              <div style={{
+                width: '44px', height: '44px', borderRadius: '12px',
+                backgroundColor: 'var(--primary-glow)', display: 'flex',
+                alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Phone size={22} color="var(--primary)" />
+              </div>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>Phone Number Required</h2>
+            </div>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '20px' }}>
+              We need your mobile number to send you queue updates and appointment notifications via SMS.
+            </p>
+            <div style={{ position: 'relative', marginBottom: '8px' }}>
+              <span style={{
+                position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)',
+                color: 'var(--text-muted)', fontSize: '0.95rem', fontWeight: 500,
+              }}>+91</span>
+              <input
+                id="phone-input"
+                type="tel"
+                className="input"
+                placeholder="9876543210"
+                maxLength={10}
+                value={phoneInput}
+                onChange={(e) => { setPhoneInput(e.target.value.replace(/\D/g, '')); setPhoneError(''); }}
+                onKeyDown={(e) => e.key === 'Enter' && handlePhoneSubmit()}
+                style={{ paddingLeft: '52px', width: '100%' }}
+                autoFocus
+              />
+            </div>
+            {phoneError && (
+              <p style={{ color: '#ef4444', fontSize: '0.8rem', margin: '4px 0 12px' }}>{phoneError}</p>
+            )}
+            <button
+              id="save-phone-btn"
+              className="btn btn-primary"
+              onClick={handlePhoneSubmit}
+              disabled={phoneSaving}
+              style={{ width: '100%', marginTop: phoneError ? '0' : '12px', padding: '12px' }}
+            >
+              {phoneSaving ? 'Saving…' : 'Save & Continue'}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Sidebar */}
       <aside style={{ 
         width: '220px', 

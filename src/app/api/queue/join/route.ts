@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
+import { sendQueueJoinSMS } from '@/lib/sms';
 import { cookies } from 'next/headers';
 
 export async function POST(req: Request) {
@@ -61,6 +62,12 @@ export async function POST(req: Request) {
     });
 
     const tokenData = joinQueue();
+
+    // Fire-and-forget SMS notification
+    const userRow = db.prepare('SELECT phone FROM users WHERE id = ?').get(userId) as { phone: string | null } | undefined;
+    if (userRow?.phone) {
+      sendQueueJoinSMS(userRow.phone);
+    }
 
     return NextResponse.json({ 
       message: 'Joined queue successfully', 
